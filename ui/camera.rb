@@ -1,6 +1,6 @@
 class Camera
 	
-	attr_reader :zoom, :offset
+	attr_reader :zoom, :offset, :locked
 	#attr_accessor :offset
 	
 	def initialize(window:, offset:, zoom:)
