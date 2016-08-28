@@ -125,6 +125,12 @@ class Camera
 		end
 	end
 	
+	# transforms global coordinates to
+	# view coordinates (i.e. coordinates to draw things)
+	def view_coordinates(position)
+		self.offset + position * self.zoom
+	end
+	
 	def button_down(id)
 		case id
 		when Gosu::MsWheelUp
