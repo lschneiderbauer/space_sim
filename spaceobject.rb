@@ -5,8 +5,19 @@ require_relative 'particle.rb'
 class Spaceobject < Particle
 	include Clickable
 	
-	@@crosshairs = Gosu::Image.new("media/crosshairs.png")	# load them only once (not for every object)
-	@@arrow = Gosu::Image.new("media/arrow.png")
+	CROSSHAIRS_DIAMETER = (50 * UI_SCALE).to_i
+	ARROW_WIDTH = (30 * UI_SCALE).to_i
+	
+	@@crosshairs = Gosu::Image.new(Magick::Image.read("media/crosshairs.svg") do |img|
+				img.density = "#{CROSSHAIRS_DIAMETER}"
+				img.background_color = "transparent"
+			end.first)
+	
+	#@@arrow = Gosu::Image.new("media/arrow.png")
+	@@arrow = Gosu::Image.new(Magick::Image.read("media/arrow.svg") do |img|
+				img.density = "#{ARROW_WIDTH}"
+				img.background_color = "transparent"
+			end.first)
 
 	# creation helper
 	def self.create_circular_satellite(carrier:, mass:, distance:, radius:0.0, image:nil, caption:"")
@@ -23,9 +34,6 @@ class Spaceobject < Particle
 			caption: caption
 		)
 	end
-	
-	CROSSHAIRS_DIAMETER = (@@crosshairs.width * 0.5 * UI_SCALE).to_i
-	# just temporary relying on @@crosshairs.width (may change for future graphics)
 	
 	
 	attr_accessor :show_caption, :show_history
@@ -70,7 +78,7 @@ class Spaceobject < Particle
 			if self.visible?
 				
 				@crosshairs_position = d_position - Vector[CROSSHAIRS_DIAMETER,CROSSHAIRS_DIAMETER]/2 # 4 because 0.5 scale
-				@caption.position = d_position + Vector[0.0, (UI_SCALE * @@crosshairs.height.to_f/2)]
+				@caption.position = d_position + Vector[0.0, @@crosshairs.height]
 				
 			else
 				
@@ -104,9 +112,9 @@ class Spaceobject < Particle
 		
 		if @show_caption
 			if self.visible? # draw crosshairs
-				@@crosshairs.draw(*@crosshairs_position.to_a , ZOrder::IND, CROSSHAIRS_DIAMETER.to_f/@@crosshairs.width, CROSSHAIRS_DIAMETER.to_f/@@crosshairs.height)
+				@@crosshairs.draw(*@crosshairs_position.to_a , ZOrder::IND)
 			else # otherwise draw arrow
-				@@arrow.draw_rot(*@arrow_position.to_a, ZOrder::IND, @arrow_angle, 0.5, 0.5, 0.05 * UI_SCALE, 0.05 *UI_SCALE)
+				@@arrow.draw_rot(*@arrow_position.to_a, ZOrder::IND, @arrow_angle)
 			end
 
 			@caption.draw
