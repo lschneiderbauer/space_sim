@@ -11,7 +11,6 @@ require_relative 'spaceobject.rb'
 require_relative 'spaceship.rb'
 #require_relative 'hud.rb'
 
-
 class Vector
 	def normal
 		if self.size == 2
@@ -24,7 +23,7 @@ end
 class GameWindow < Gosu::Window
 	
 	attr_reader :cam, :mouse_focus
-	
+
 	def initialize
 		#super(Gosu::screen_width,Gosu::screen_height, fullscreen: true)
 		super(Gosu::screen_width/2,Gosu::screen_height/2, fullscreen: false)
@@ -146,10 +145,10 @@ class GameWindow < Gosu::Window
 			offset: @earth.position,
 			zoom: self.height / (3 * @earth.radius / LENGTH_SCALE))
 
-		# cam locked onto earth		
+		# cam locked onto earth
 		@cam.lock(@earth)
 		
-		@zoom_indicator = ZoomIndicator.new(self, Vector[50.0, self.height - ZoomIndicator.height - 50])
+		@zoom_indicator = ZoomIndicator.new(self, Vector[50.0 * UI_SCALE, self.height - ZoomIndicator.height - 50 * UI_SCALE])
 	end
 	
 	

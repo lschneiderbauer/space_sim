@@ -24,6 +24,9 @@ class Spaceobject < Particle
 		)
 	end
 	
+	CROSSHAIRS_DIAMETER = (@@crosshairs.width * 0.5 * UI_SCALE).to_i
+	# just temporary relying on @@crosshairs.width (may change for future graphics)
+	
 	
 	attr_accessor :show_caption, :show_history
 	attr_reader :window, :caption
@@ -66,8 +69,8 @@ class Spaceobject < Particle
 			
 			if self.visible?
 				
-				@crosshairs_position = d_position - Vector[@@crosshairs.width,@@crosshairs.height]/4 # 4 because 0.5 scale
-				@caption.position = d_position + Vector[0.0, @@crosshairs.height/2]
+				@crosshairs_position = d_position - Vector[CROSSHAIRS_DIAMETER,CROSSHAIRS_DIAMETER]/2 # 4 because 0.5 scale
+				@caption.position = d_position + Vector[0.0, (UI_SCALE * @@crosshairs.height.to_f/2)]
 				
 			else
 				
@@ -81,13 +84,13 @@ class Spaceobject < Particle
 				#
 				rel_scaled = 
 					if rel[0].abs/rel[1].abs >= @window.width.to_f/@window.height.to_f
-						rel / rel[0].abs * (@window.width/2-50)
+						rel / rel[0].abs * (@window.width/2-(50*UI_SCALE).to_i)
 					else
-						rel / rel[1].abs * (@window.height/2-50)
+						rel / rel[1].abs * (@window.height/2-(50*UI_SCALE).to_i)
 					end
 				
 				@arrow_position = Vector[@window.width, @window.height]/2 + rel_scaled
-				@caption.position = Vector[@window.width, @window.height]/2 + rel_scaled.normalize * (rel_scaled.norm - 30 - @caption.diameter(@arrow_angle)/2)
+				@caption.position = Vector[@window.width, @window.height]/2 + rel_scaled.normalize * (rel_scaled.norm - (30*UI_SCALE).to_i - @caption.diameter(@arrow_angle)/2)
 			end
 		end
 		
@@ -101,9 +104,9 @@ class Spaceobject < Particle
 		
 		if @show_caption
 			if self.visible? # draw crosshairs
-				@@crosshairs.draw(*@crosshairs_position.to_a , ZOrder::IND, 0.5, 0.5)
+				@@crosshairs.draw(*@crosshairs_position.to_a , ZOrder::IND, CROSSHAIRS_DIAMETER.to_f/@@crosshairs.width, CROSSHAIRS_DIAMETER.to_f/@@crosshairs.height)
 			else # otherwise draw arrow
-				@@arrow.draw_rot(*@arrow_position.to_a, ZOrder::IND, @arrow_angle, 0.5, 0.5, 0.05, 0.05)
+				@@arrow.draw_rot(*@arrow_position.to_a, ZOrder::IND, @arrow_angle, 0.5, 0.5, 0.05 * UI_SCALE, 0.05 *UI_SCALE)
 			end
 
 			@caption.draw

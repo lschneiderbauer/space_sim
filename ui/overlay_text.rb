@@ -7,10 +7,10 @@ class OverlayText
 	FONT_COLOR_HOVER = "#3fbf3fff"
 	BACKGROUND_COLOR = "#232629aa"
 	BACKGROUND_COLOR_HOVER = "#232629ff"
-	FONT_SIZE = 25
+	FONT_SIZE = (25 * UI_SCALE).to_i
 	FONT_NAME = "Oxygen Mono"
 	
-	MIN_WIDTH = 150
+	MIN_WIDTH = (150 * UI_SCALE).to_i
 	
 	@@font = Gosu::Font.new(FONT_SIZE, name: FONT_NAME)
 	
@@ -32,17 +32,18 @@ class OverlayText
 		# #######################
 		img_width = (@@font.text_width(text)+50 < MIN_WIDTH ? MIN_WIDTH : @@font.text_width(text)+50)
 		
-		rimg = Magick::Image.new(img_width,FONT_SIZE+20) do |img|
+		rimg = Magick::Image.new(img_width,FONT_SIZE+ (20*UI_SCALE)) do |img|
 			img.background_color = 'transparent'
+			img.density = "72x72"	# for the font drawing later on
 		end
-	
+
 		td = Magick::Draw.new do |td|
 			td.stroke = FONT_COLOR
 			td.stroke_width = 2
 			td.fill = BACKGROUND_COLOR
 		end
 		td.roundrectangle(1, 1, rimg.columns-2, rimg.rows-2, 5, 5).draw(rimg)
-		td.annotate(rimg, rimg.columns, rimg.rows, 0, 2, text) do |td|
+		td.annotate(rimg, rimg.columns, rimg.rows, 0, (2*UI_SCALE).to_i, text) do |td|
 			td.stroke = FONT_COLOR
 			td.stroke_width = 1
 			td.font_family = FONT_NAME
@@ -53,9 +54,8 @@ class OverlayText
 		
 		@img = Gosu::Image.new(rimg)
 		
-		
 		# hovered img
-		rimg = Magick::Image.new(img_width,FONT_SIZE+20) do |img|
+		rimg = Magick::Image.new(img_width,FONT_SIZE+ (20*UI_SCALE).to_i) do |img|
 			img.background_color = 'transparent'
 		end
 	
@@ -65,7 +65,7 @@ class OverlayText
 			td.fill = BACKGROUND_COLOR_HOVER
 		end
 		td.roundrectangle(1, 1, rimg.columns-2, rimg.rows-2, 5, 5).draw(rimg)
-		td.annotate(rimg, rimg.columns, rimg.rows, 0, 2, text) do |td|
+		td.annotate(rimg, rimg.columns, rimg.rows, 0, (2*UI_SCALE).to_i, text) do |td|
 			td.stroke = FONT_COLOR
 			td.stroke_width = 1
 			td.font_family = FONT_NAME

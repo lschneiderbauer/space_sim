@@ -1,3 +1,5 @@
+UI_SCALE = 0.5
+
 ZOOM_FACTOR = 1.1
 TIME_DILATION = 60.0 # 60.0 # 3600.0
 DT = 1.0/60 * TIME_DILATION	# 60 frames per second
