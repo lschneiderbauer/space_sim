@@ -1,9 +1,16 @@
+#tmp
+# require 'opengl'
+# require 'gl'
+# require 'glu'
+# require 'benchmark'
+
 require_relative 'ui/clickable.rb'
 require_relative 'ui/overlay_text.rb'
 require_relative 'particle.rb'
 
 class Spaceobject < Particle
 	include Clickable
+	#include Gl
 	
 	CROSSHAIRS_DIAMETER = (50 * UI_SCALE).to_i
 	ARROW_WIDTH = (30 * UI_SCALE).to_i
@@ -45,9 +52,10 @@ class Spaceobject < Particle
 	# radius in km
 	def initialize(window:, mass:, position:, velocity:, radius:0.0, image:nil, caption:"")
 		super(mass, position, velocity)
+		puts "Loading #{caption} ..."
 		
 		@window = window
-		
+			
 		@caption = OverlayText.new(window, caption)
 		@caption.on_mouse_click { |obj, id| trigger_mouse_click(id) }
 		@caption.on_mouse_hover { |obj| trigger_mouse_hover } 
@@ -64,12 +72,14 @@ class Spaceobject < Particle
 		@image = Gosu::Image.new(image, tileable: true) unless image.nil?
 		@image_position = Vector[0,0]
 
+# 		@window.cam.on_zoom_changed { |old, new| recalc_trail(@window.cam.locked, new) }
+# 		@window.cam.on_lock_changed { |old, new| recalc_trail(new, @window.cam.zoom) }
 	end
 
 	def update
 		@caption.update
 		
-		d_position = @window.cam.offset + self.position * @window.cam.zoom	# drawing coordinates
+		d_position = @window.cam.view_coords(self.position)	# drawing coordinates
 		
 		# calculate positions of arrows and text
 		# and arrow angle
@@ -101,13 +111,14 @@ class Spaceobject < Particle
 				@caption.position = Vector[@window.width, @window.height]/2 + rel_scaled.normalize * (rel_scaled.norm - (30*UI_SCALE).to_i - @caption.diameter(@arrow_angle)/2)
 			end
 		end
-		
+			
 		unless @image.nil?
 			d_height = d_width = @radius*2 * @window.cam.zoom
 			@image_position = d_position - Vector[d_width, d_height] / 2
 		end
 	end
 	
+
 	def draw
 		
 		if @show_caption
@@ -125,9 +136,60 @@ class Spaceobject < Particle
 			
 			@image.draw(*@image_position.to_a, ZOrder::SOBJECT, d_width/@image.width, d_height/@image.height)
 		end
+=begin
+		# draw history
+		if !@window.cam.locked.nil? && @window.cam.locked != self && self.visible?
+			
+			@window.gl do
 
-	end
 	
+				#Initialize clear color
+				#glClearColor( 255, 255, 255, 000 )
+
+				#Enable texturing
+				#glEnable( GL_TEXTURE_2D )
+
+				#Set blending
+				glEnable( GL_BLEND )
+				#glDisable( GL_DEPTH_TEST )
+				glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA )
+
+				#Set antialiasing/multisampling
+				glHint( GL_LINE_SMOOTH_HINT, GL_NICEST )
+				glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST )
+				glEnable( GL_LINE_SMOOTH )
+				glEnable( GL_POLYGON_SMOOTH )
+				#glEnable( GL_MULTISAMPLE )
+
+				glLineWidth(1.5)
+				
+				glEnableClientState(GL_VERTEX_ARRAY)
+				
+				glVertexPointer(3, GL_FLOAT, 0, @trail)
+				glDrawArrays(GL_LINE_STRIP, 0, @trail.size/3)
+				
+# 				puts "drawarray #{time1}"
+# 				puts "arraymanip #{time2}"
+# 				puts "arraymanip2 #{time3}"
+				
+				glDisableClientState(GL_VERTEX_ARRAY)
+				
+#				Gl::glBegin(Gl::GL_LINE_STRIP)
+# 				self.position_history.each_with_index do |pos, i|
+# 					coords = @window.cam.view_coordinates(locked.position + self.position_history[i] - locked.position_history[i])
+# 					Gl::glVertex3f(*coords.to_a, ZOrder::SOBJECT-0.1)
+# 				end
+#				Gl::glEnd
+				
+				glDisable( GL_LINE_SMOOTH )
+				glDisable( GL_POLYGON_SMOOTH )
+			end
+			
+
+		end
+=end
+	end
+
 	def visible?
 		(-window.cam.offset[0]..-@window.cam.offset[0] + @window.width).superset?(self.position[0]*@window.cam.zoom - (@@crosshairs.width/2)..self.position[0]*@window.cam.zoom + (@@crosshairs.width/2)) && (-@window.cam.offset[1]..-@window.cam.offset[1] + @window.height).superset?(self.position[1]*@window.cam.zoom - (@@crosshairs.height/2)..self.position[1]*@window.cam.zoom + (@@crosshairs.height/2))
 	end

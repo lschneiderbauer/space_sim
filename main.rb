@@ -34,6 +34,11 @@ class GameWindow < Gosu::Window
 		@on_button_down = []	# for registering callbacks
 		@on_button_up = []
 		
+		@cam = Camera.new(
+			window: self,
+			offset: Vector[0.0,0.0],
+			zoom: self.height / (3 * EARTH_RADIUS / LENGTH_SCALE))
+		
 		@spaceobjects = []
 		
 		@spaceobjects <<
@@ -139,11 +144,6 @@ class GameWindow < Gosu::Window
 		
 		# activate caption
 		@spaceobjects.map{|so| so.show_caption = true}
-		
-		@cam = Camera.new(
-			window: self,
-			offset: @earth.position,
-			zoom: self.height / (3 * @earth.radius / LENGTH_SCALE))
 
 		# cam locked onto earth
 		@cam.lock(@earth)

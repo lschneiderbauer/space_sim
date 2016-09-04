@@ -39,6 +39,10 @@ class Camera
 			
 			@animations.first.update
 			@offset = @animations.first.offset
+			
+			if @zoom != @animations.first.zoom
+				trigger_zoom_changed(@zoom, @animations.first.zoom)
+			end
 			@zoom = @animations.first.zoom
 			
 			@animations.shift if @animations.first.finished?
@@ -47,6 +51,8 @@ class Camera
 	end
 	
 	def lock_and_zoom(spaceobject)
+		trigger_lock_changed(@locked, spaceobject) if spaceobject != @locked
+		
 		@locked = spaceobject
 		@offset_speed = spaceobject.velocity / LENGTH_SCALE
 		
@@ -68,10 +74,12 @@ class Camera
 			start_offset_velocity: @offset_speed,
 			end_offset_velocity: next_offset_speed)
 				
-		@zoom = end_zoom
+		#@zoom = end_zoom
+		
 	end
 	
 	def lock(spaceobject)
+		trigger_lock_changed(@locked, spaceobject) if spaceobject != @locked
 		@locked = spaceobject
 		
 		next_offset_speed = spaceobject.velocity / LENGTH_SCALE
@@ -95,6 +103,8 @@ class Camera
 	end
 	
 	def unlock
+		trigger_lock_changed(@locked, nil) unless @locked.nil?
+		
 		@offset_speed = @locked.velocity / LENGTH_SCALE unless @locked.nil?
 		@locked = nil
 	end
@@ -121,13 +131,14 @@ class Camera
 				start_offset_velocity: @offset_speed,
 				end_offset_velocity: @offset_speed)
 =end # still problems with it
-			
+			trigger_zoom_changed(@zoom / zoom_factor, @zoom)
 		end
+		
 	end
 	
 	# transforms global coordinates to
 	# view coordinates (i.e. coordinates to draw things)
-	def view_coordinates(position)
+	def view_coords(position)
 		self.offset + position * self.zoom
 	end
 	
@@ -146,7 +157,31 @@ class Camera
 		case id
 		when Gosu::MsLeft
 			@mouse_pressed = nil
-		end if @animations.empty? # block input during animations
+		end # if @animations.empty? # block input during animations
+	end
+	
+	def on_zoom_changed(&block)
+		@on_zoom_changed ||= []
+		@on_zoom_changed << block
+	end
+	
+	def trigger_zoom_changed(old,new)
+		@on_zoom_changed ||= []
+		@on_zoom_changed.each do |block|
+			block.call(old,new)
+		end
+	end
+	
+	def on_lock_changed(&block)
+		@on_lock_changed ||= []
+		@on_lock_changed << block
+	end
+	
+	def trigger_lock_changed(old,new)
+		@on_lock_changed ||= []
+		@on_lock_changed.each do |block|
+			block.call(old,new)
+		end
 	end
 	
 end

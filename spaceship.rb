@@ -63,7 +63,7 @@ class Spaceship < Spaceobject
 	
 	def draw
 		super
-		d_position = @window.cam.offset + self.position * @window.cam.zoom
+		d_position = @window.cam.view_coords(self.position)
 		d_height = @radius*2 * @window.cam.zoom
 		d_width = @radius*2 * @window.cam.zoom * @@image.width/@@image.height
 
