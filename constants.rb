@@ -1,7 +1,8 @@
 UI_SCALE = 1.0
 
 ZOOM_FACTOR = 1.1
-TIME_DILATION = 60.0 # 60.0 # 3600.0
+#TIME_DILATION = 60.0 # 60.0 # 3600.0
+TIME_DILATION = 1 # 60.0 # 3600.0
 DT = 1.0/60 * TIME_DILATION	# 60 frames per second
 
 LENGTH_SCALE = 50 	# 1 grid-unit =: <scale> km
@@ -10,7 +11,7 @@ LENGTH_SCALE = 50 	# 1 grid-unit =: <scale> km
 # constants of nature
 # used units: kg, km, s
 
-GRAV_CONST = 6.67408 * (10**-20)	# km^3 kg^-1 s^-1
+GRAV_CONST = 6.67408 * (10**-20)	# km^3 kg^-1 s^-2
 
 EARTH_RADIUS = 6371.0		# km
 EARTH_MASS = 5.97237 * (10**24) # kg

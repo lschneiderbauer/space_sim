@@ -8,6 +8,11 @@ class Spaceship < Spaceobject
 	FUEL_LOSS_RATE = 500.0 / 60 * 1000 # kg/s
 	EXHAUST_VELOCITY = 2500.0 / 1000	# km/s		# for solid rocket, see https://en.wikipedia.org/wiki/Specific_impulse
 	
+
+	Magick::Image.read("media/spaceship.svg") do |img|
+                img.density = "300%"
+                img.background_color = 'transparent'
+        end
 	@@image = Gosu::Image.new(Magick::Image.read("media/spaceship.svg") do |img|
 		img.density = "300%"
 		img.background_color = 'transparent'

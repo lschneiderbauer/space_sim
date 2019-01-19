@@ -58,7 +58,7 @@ class Camera
 		
 		next_offset_speed = spaceobject.velocity / LENGTH_SCALE
 		end_zoom = @window.height / (3 * @locked.radius / LENGTH_SCALE)
-		end_offset = (- @locked.position * @zoom + Vector[@window.width, @window.height]/2 - @zoom * @offset_speed * DT * 30) * end_zoom/@zoom - Vector[@window.width, @window.height]/2 * (end_zoom/@zoom - 1.0)
+		end_offset = (- @locked.position * @zoom + Vector[@window.width.to_f, @window.height.to_f]/2 - @zoom * @offset_speed * DT * 30) * end_zoom/@zoom - Vector[@window.width.to_f, @window.height.to_f]/2 * (end_zoom/@zoom - 1.0)
 		
 		unless @animations.empty?
 			# for now only support one animation, because: for now a click on overlaying buttons triggers locks to all of them (= ugly result)
@@ -83,7 +83,7 @@ class Camera
 		@locked = spaceobject
 		
 		next_offset_speed = spaceobject.velocity / LENGTH_SCALE
-		end_offset = - @locked.position * @zoom + Vector[@window.width, @window.height]/2 - @zoom * next_offset_speed * DT * 30
+		end_offset = - @locked.position * @zoom + Vector[@window.width.to_f, @window.height.to_f]/2 - @zoom * next_offset_speed * DT * 30
 		
 		unless @animations.empty?
 			# for now only support one animation, because: for now a click on overlaying buttons triggers locks to all of them (= ugly result)
@@ -140,6 +140,15 @@ class Camera
 	# view coordinates (i.e. coordinates to draw things)
 	def view_coords(position)
 		self.offset + position * self.zoom
+	end
+	# in retrospect the sign of the offset seems pretty idiotic
+	# and offset seems to be dependent on the zoom, also ridiculous
+
+
+	# gives back current view in terms of global coordinates
+	# (in terms of left bottom and top right point)
+	def current_view
+		[-self.offset/self.zoom, (-self.offset + Vector[@window.width.to_f,@window.height.to_f])/self.zoom]
 	end
 	
 	def button_down(id)

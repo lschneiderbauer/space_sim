@@ -9,6 +9,7 @@ require_relative 'ui/camera.rb'
 require_relative 'ui/zoom_indicator.rb'
 require_relative 'spaceobject.rb'
 require_relative 'spaceship.rb'
+require_relative 'gravcontour.rb'
 #require_relative 'hud.rb'
 
 class Vector
@@ -149,6 +150,7 @@ class GameWindow < Gosu::Window
 		@cam.lock(@earth)
 		
 		@zoom_indicator = ZoomIndicator.new(self, Vector[50.0 * UI_SCALE, self.height - ZoomIndicator.height - 50 * UI_SCALE])
+		@gravcontour = GravContour.new(self)
 	end
 	
 	
@@ -157,8 +159,8 @@ class GameWindow < Gosu::Window
 		Particle.update_simulation
 	
 		# update camera (current view)
-		# ! has to be before spaceobjects,
-		# because they rely on cam-info
+		# ! has to be before everything else,
+		# because other things rely on cam-info
 		@cam.update
 		
 		@zoom_indicator.update
@@ -166,6 +168,15 @@ class GameWindow < Gosu::Window
 		# update all space objects
 		@spaceobjects.each(&:update)
 		
+		# update gravitational contour-lines
+		@gravcontour.update
+
+		#debug
+		puts "#{-@cam.offset[0]/@cam.zoom}," if Gosu::button_down?(Gosu::KbF)
+		#puts self.mouse_y
+		#puts @cam.view_coords(@cam.current_view[0])
+		#puts @cam.view_coords(@cam.current_view[1])
+		#puts @cam.view_coords(-@cam.offset/@cam.zoom)
 	end
 	
 	def draw
@@ -176,6 +187,9 @@ class GameWindow < Gosu::Window
 				@bg.draw(@bg.width * i, @bg.height * j, ZOrder::BG)
 			end
 		end
+
+		# after background make gravitational contours
+		@gravcontour.draw
 		
 		@spaceobjects.each(&:draw)
 

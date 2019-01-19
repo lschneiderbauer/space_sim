@@ -55,7 +55,7 @@ class Spaceobject < Particle
 		puts "Loading #{caption} ..."
 		
 		@window = window
-			
+		
 		@caption = OverlayText.new(window, caption)
 		@caption.on_mouse_click { |obj, id| trigger_mouse_click(id) }
 		@caption.on_mouse_hover { |obj| trigger_mouse_hover } 
@@ -67,7 +67,7 @@ class Spaceobject < Particle
 		
 		@show_caption = false
 		
-		@radius = radius / LENGTH_SCALE
+		@radius = radius.to_f / LENGTH_SCALE
 		
 		@image = Gosu::Image.new(image, tileable: true) unless image.nil?
 		@image_position = Vector[0,0]
@@ -92,7 +92,7 @@ class Spaceobject < Particle
 				
 			else
 				
-				cam_pos = -@window.cam.offset + Vector[@window.width,@window.height]/2
+				cam_pos = -@window.cam.offset + Vector[@window.width.to_f,@window.height.to_f]/2
 				rel = (self.position * @window.cam.zoom - cam_pos).normalize
 				
 				@arrow_angle = 90 + Math::acos(rel.dot(Vector[0,-1])) / Math::PI * 180.0
@@ -107,8 +107,8 @@ class Spaceobject < Particle
 						rel / rel[1].abs * (@window.height/2-(50*UI_SCALE).to_i)
 					end
 				
-				@arrow_position = Vector[@window.width, @window.height]/2 + rel_scaled
-				@caption.position = Vector[@window.width, @window.height]/2 + rel_scaled.normalize * (rel_scaled.norm - (30*UI_SCALE).to_i - @caption.diameter(@arrow_angle)/2)
+				@arrow_position = Vector[@window.width.to_f, @window.height.to_f]/2 + rel_scaled
+				@caption.position = Vector[@window.width.to_f, @window.height.to_f]/2 + rel_scaled.normalize * (rel_scaled.norm - (30*UI_SCALE).to_i - @caption.diameter(@arrow_angle)/2)
 			end
 		end
 			

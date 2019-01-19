@@ -32,6 +32,10 @@ class Particle
 
 	end
 	
+	def self.particles
+		@@particles.clone
+	end
+
 	# total momentum of all particles
 	def self.total_momentum
 		@@particles.map{|p| p.momentum}.reduce(:+)
@@ -51,7 +55,7 @@ class Particle
 		
 		total_kin + pot
 	end
-	
+
 	# center of mass vector
 	def self.center_of_mass
 		@@particles.map {|p| p.position * p.mass}.reduce(:+) / @@particles.map{ |p| p.mass }.reduce(:+)
@@ -74,7 +78,7 @@ class Particle
 		#@ind = @@particles.size
 		@@particles << self
 	end
-	
+
 	def update_position(particles)
 		
 		if @acc.nil?	# only calculate the first time
@@ -139,6 +143,9 @@ class Particle
 			
 			### TODO ?
 			#if distance > 10
+
+			# Note that we don't multiply here with the LENGTH_SCALE since this is the acceleration not in physical units
+			# but the acceleration w.r.t. to our global coordinate system in units of LENGTH_SCALE
 			force + GRAV_CONST * particle.mass / (distance**3) * displacement
 			#else
 			#	force
