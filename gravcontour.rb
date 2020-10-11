@@ -1,85 +1,81 @@
 require 'inline'
 require 'opengl'
 require 'gl'
-#require 'glu'
+# require 'glu'
 
 class GravContour
-	include Gl
+  include Gl
 
-    def initialize(window)
-        @window = window
+  def initialize(window)
+    @window = window
 
-		@contours = []
+    @contours = []
+  end
+
+  def update
+    bottomleft, topright = @window.cam.current_view
+    pixelsize = (topright[0] - bottomleft[0]) / @window.width
+
+    puts "range #{topright[0] - bottomleft[0]}"
+
+    # we have to initialize those before calling self.contour
+    @masses = Particle.particles.map { |p| p.mass * GRAV_CONST }
+    @positions_x = Particle.particles.map { |p| p.position[0] }
+    @positions_y = Particle.particles.map { |p| p.position[1] }
+
+    puts @masses.inspect
+
+    @contours = generate_contours(pixelsize, bottomleft[0], bottomleft[1], topright[0], topright[1])
+
+    # puts (Particle.particles[4].position - Vector[*@contours[0]]).norm
+
+    # IO.write("ar.txt", ar.join("\n"))
+  end
+
+  def draw
+    @window.gl do
+      # Initialize clear color
+      # glClearColor( 255, 255, 255, 000 )
+
+      # Enable texturing
+      # glEnable( GL_TEXTURE_2D )
+
+      # Set blending
+      glEnable(GL_BLEND)
+      # glDisable( GL_DEPTH_TEST )
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+      # Set antialiasing/multisampling
+      glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+      glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
+      glEnable(GL_LINE_SMOOTH) # smooth line
+      # glEnable( GL_LINE_STIPPLE ) # dashed line
+      glEnable(GL_POLYGON_SMOOTH)
+      # glEnable( GL_MULTISAMPLE )
+
+      glLineWidth(2.0)
+
+      @contours.each do |cont|
+        Gl.glBegin(Gl::GL_LINE_STRIP)
+
+        cont.each do |position|
+          coords = @window.cam.view_coords(Vector[*position])
+          Gl.glVertex3f(*coords.to_a, ZOrder::SOBJECT - 0.1)
+        end
+
+        Gl.glEnd
+      end
+
+      glDisable(GL_LINE_SMOOTH)
+      glDisable(GL_POLYGON_SMOOTH)
     end
+  end
 
-	def update
-		bottomleft, topright = @window.cam.current_view
-		pixelsize = (topright[0]-bottomleft[0])/@window.width
-		
-		puts "range #{topright[0]-bottomleft[0]}"
-
-        # we have to initialize those before calling self.contour
-		@masses = Particle.particles.map {|p| p.mass * GRAV_CONST}
-        @positions_x = Particle.particles.map {|p| p.position[0]}
-		@positions_y = Particle.particles.map {|p| p.position[1]}
-
-
-		puts @masses.inspect
-
-		@contours = generate_contours(pixelsize, bottomleft[0], bottomleft[1], topright[0], topright[1])
-
-		#puts (Particle.particles[4].position - Vector[*@contours[0]]).norm
-		 
-		#IO.write("ar.txt", ar.join("\n"))
-	end
-
-	def draw
-		@window.gl do
-
-			#Initialize clear color
-			#glClearColor( 255, 255, 255, 000 )
-
-			#Enable texturing
-			#glEnable( GL_TEXTURE_2D )
-
-			#Set blending
-			glEnable( GL_BLEND )
-			#glDisable( GL_DEPTH_TEST )
-			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA )
-
-			#Set antialiasing/multisampling
-			glHint( GL_LINE_SMOOTH_HINT, GL_NICEST )
-			glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST )
-			glEnable( GL_LINE_SMOOTH ) # smooth line
-			#glEnable( GL_LINE_STIPPLE ) # dashed line
-			glEnable( GL_POLYGON_SMOOTH )
-			#glEnable( GL_MULTISAMPLE )
-
-			glLineWidth(2.0)
-			
-			@contours.each do |cont|
-				Gl::glBegin(Gl::GL_LINE_STRIP)
-			
-				cont.each do |position|
-					coords = @window.cam.view_coords(Vector[*position])
-					Gl::glVertex3f(*coords.to_a, ZOrder::SOBJECT-0.1)
-				end
-
-				Gl::glEnd
-			end
-			
-			glDisable( GL_LINE_SMOOTH )
-			glDisable( GL_POLYGON_SMOOTH )
-		end
-	end
-
-    private
-
-    inline do |builder|
-		builder.add_compile_flags "-lruby24 -lm"
-		builder.include "<math.h>"
-		builder.include "<float.h>"
-		builder.prefix "
+  inline do |builder|
+    builder.add_compile_flags '-lruby24 -lm'
+    builder.include '<math.h>'
+    builder.include '<float.h>'
+    builder.prefix "
 			double pot(VALUE self, double pot_pos_x, double pot_pos_y) {
 
 				/* IMPORTANT
@@ -105,7 +101,7 @@ class GravContour
 					sum += NUM2LONG(masses[i]) /
 						(LENGTH_SCALE *
 							sqrt(
-								pow( NUM2DBL(positions_x[i]) - pot_pos_x , 2.0) + 
+								pow( NUM2DBL(positions_x[i]) - pot_pos_x , 2.0) +
 								pow( NUM2DBL(positions_y[i]) - pot_pos_y , 2.0)
 							)
 						);
@@ -176,7 +172,7 @@ class GravContour
 
 
 
-			VALUE contour(VALUE self, double pixelsize, double start_x, double start_y, 
+			VALUE contour(VALUE self, double pixelsize, double start_x, double start_y,
 				double bottomleft_x, double bottomleft_y, double topright_x, double topright_y) {
 				float step = pixelsize * 5;
 				double* step_vec;
@@ -184,7 +180,7 @@ class GravContour
 				double* ngrad;
 
 				double value = pot(self, start_x, start_y);
-				
+
 
 				/* for debug reasons look for starting value 940 */
 	/*
@@ -204,7 +200,7 @@ class GravContour
 				double cur_point_x = start_x;
 				double cur_point_y = start_y;
 
-				
+
 				VALUE cont = rb_ary_new();
 				rb_ary_push(cont, rb_ary_new3(2, DBL2NUM(cur_point_x), DBL2NUM(cur_point_y) ));
 
@@ -228,7 +224,7 @@ class GravContour
 					cur_point_x += step_vec[0];
 					cur_point_y += step_vec[1];
 
-					
+
 					// error correction (make better...) ( do the same as in the gradient follow-approach)
 					int ct = 0;
 					while ( (pot(self, cur_point_x, cur_point_y)-value) < -0.001 * norm(grad) && ct < 10) {
@@ -261,10 +257,10 @@ class GravContour
 			}
 			"
 
-		builder.c "
-			VALUE generate_contours(double pixelsize, 
+    builder.c "
+			VALUE generate_contours(double pixelsize,
 				double bottomleft_x, double bottomleft_y, double topright_x, double topright_y) {
-				
+
 				/* STRATEGY:
 					-> make a very crude map of the potential
 					-> determine minimum and maximum
@@ -278,11 +274,11 @@ class GravContour
 				double width = topright_x - bottomleft_x;
 				double height = topright_y - bottomleft_y;
 				double grid[100];
-				
+
 				double min=INT_MAX;
 				double max=INT_MIN;
 				int min_i, max_i;
-	
+
 				// make crude map and find minimum and maximum
 				int i=0;
 				for (i=0; i<100; i++) {
@@ -316,7 +312,7 @@ class GravContour
 					printf(\"cur_value: %f\\n\", cur_value);
 					printf(\"opt_value: %f\\n\", opt_value);
 
-					// i implemented kind of a newton-method. 
+					// i implemented kind of a newton-method.
 					// but (for 1/r this will overshoot for (r-rsing) > 2/opt_value))
 					// and seems therefore pretty useless for my purposes, because the initial guess has to be good
 
@@ -328,12 +324,12 @@ class GravContour
 
 					when delta/A is small. where A is the coefficient in the A/r potential, and
 					delta is the change of the potential (f[r[n]]-f[r[n+1]]) we want to achieve.
-					
+
 					If the formula is used while delta[n]/A is too big, then we run the risk shoot over the singularity.
 					The full formula is:
 
 						r[n+1] = r[n] + (r[n]-r_sing)^2 / (A/delta - (r_sing - r[n]))
-				
+
 					which for large A/delta brings you close the the singularity
 					*/
 
@@ -344,12 +340,12 @@ class GravContour
 						sing_dist = strongest_sing_dist(self, start_x, start_y);
 						printf(\"strongest_sing_dist_dist: %f\\n\", sing_dist[0]);
 						printf(\"strongest_sing_dist_mass: %f\\n\", sing_dist[1]);
-						
+
 						double factor = pow(sing_dist[0],2) * (cur_value - opt_value)/sing_dist[1];
-						
+
 						printf(\"factor: %f\\n\", factor);
 						printf(\"delta/A: %f\\n\", (cur_value - opt_value)/sing_dist[1]);
-						start_x += ngrad[0] * factor;	
+						start_x += ngrad[0] * factor;
 						start_y += ngrad[1] * factor;
 						cur_value = pot(self, start_x, start_y);
 
@@ -359,13 +355,12 @@ class GravContour
 						abort();
 
 					}
-				
+
 					rb_ary_push(contours,contour(self, pixelsize, start_x, start_y, bottomleft_x, bottomleft_y, topright_x, topright_y));
 				}
 
 				return contours;
 			}
 		"
-	end
-
+  end
 end

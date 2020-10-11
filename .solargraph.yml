@@ -1,0 +1,17 @@
+---
+include:
+- "**/*.rb"
+exclude:
+- spec/**/*
+- test/**/*
+- vendor/**/*
+- ".bundle/**/*"
+require: []
+domains: []
+reporters:
+- rubocop
+- typecheck:typed
+- require_not_found
+require_paths: []
+plugins: []
+max_files: 5000
